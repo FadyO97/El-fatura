@@ -1,0 +1,749 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>El-Fatura — Bill Splitter</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;800;900&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#17140F;
+    --ink-2:#221D15;
+    --ink-3:#2C2519;
+    --brass:#C9A227;
+    --brass-dim:#8A7220;
+    --turquoise:#2F8F86;
+    --turquoise-dim:#1F5F59;
+    --cream:#EDE6D6;
+    --cream-dim:#A79C86;
+    --rust:#B5502C;
+    --line: rgba(237,230,214,0.14);
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    background:var(--ink);
+    color:var(--cream);
+    font-family:'Cairo',sans-serif;
+    display:flex;
+    justify-content:center;
+    padding:36px 16px 64px;
+  }
+  .wrap{width:100%;max-width:560px;}
+  .eyebrow{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:12px;
+    letter-spacing:.14em;
+    text-transform:uppercase;
+    color:var(--brass);
+    display:flex;
+    align-items:center;
+    gap:10px;
+    margin-bottom:10px;
+  }
+  .eyebrow::before{content:"";width:18px;height:1px;background:var(--brass-dim);}
+  h1{
+    font-weight:900;
+    font-size:40px;
+    margin:0 0 6px;
+    letter-spacing:-0.01em;
+  }
+  h1 span{color:var(--turquoise);}
+  .sub{
+    color:var(--cream-dim);
+    font-size:15px;
+    margin:0 0 28px;
+    line-height:1.5;
+  }
+  .card{
+    background:var(--ink-2);
+    border:1px solid var(--line);
+    border-radius:14px;
+    padding:20px;
+    margin-bottom:18px;
+  }
+  .rates{
+    display:flex;
+    gap:14px;
+    align-items:flex-end;
+    flex-wrap:wrap;
+  }
+  .field{flex:1;min-width:100px;}
+  label{
+    display:block;
+    font-size:12px;
+    color:var(--cream-dim);
+    margin-bottom:6px;
+    font-weight:600;
+  }
+  input[type=number], input[type=text]{
+    width:100%;
+    background:var(--ink-3);
+    border:1px solid var(--line);
+    color:var(--cream);
+    border-radius:8px;
+    padding:10px 12px;
+    font-family:'IBM Plex Mono',monospace;
+    font-size:15px;
+    outline:none;
+  }
+  input[type=text]{font-family:'Cairo',sans-serif;}
+  input:focus{border-color:var(--brass);}
+  .toggle-row{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    margin-top:14px;
+    font-size:13px;
+    color:var(--cream-dim);
+    cursor:pointer;
+    user-select:none;
+  }
+  .toggle-row input{width:auto;accent-color:var(--turquoise);}
+  .modes{
+    display:flex;
+    gap:8px;
+    margin-bottom:18px;
+  }
+  .mode-btn{
+    flex:1;
+    padding:11px;
+    border-radius:10px;
+    border:1px solid var(--line);
+    background:transparent;
+    color:var(--cream-dim);
+    font-family:'Cairo',sans-serif;
+    font-weight:600;
+    font-size:14px;
+    cursor:pointer;
+    transition:all .15s ease;
+  }
+  .mode-btn.active{
+    background:var(--turquoise-dim);
+    border-color:var(--turquoise);
+    color:var(--cream);
+  }
+  .chip-list{
+    display:flex;
+    flex-wrap:wrap;
+    gap:8px;
+    margin-bottom:10px;
+  }
+  .person-chip{
+    display:flex;
+    align-items:center;
+    gap:7px;
+    background:var(--turquoise-dim);
+    border:1px solid var(--turquoise);
+    color:var(--cream);
+    border-radius:999px;
+    padding:6px 8px 6px 14px;
+    font-size:13px;
+    font-weight:600;
+  }
+  .person-chip button{
+    background:transparent;
+    border:none;
+    color:var(--cream);
+    opacity:.7;
+    width:20px;height:20px;
+    border-radius:50%;
+    cursor:pointer;
+    font-size:14px;
+    line-height:1;
+  }
+  .person-chip button:hover{opacity:1;background:rgba(0,0,0,.2);}
+  .add-person-row{
+    display:flex;
+    gap:8px;
+    margin-bottom:4px;
+  }
+  .add-person-row input{flex:1;}
+  .add-person-row button{
+    padding:0 16px;
+    border-radius:8px;
+    border:1px solid var(--brass-dim);
+    background:transparent;
+    color:var(--brass);
+    font-family:'Cairo',sans-serif;
+    font-weight:700;
+    cursor:pointer;
+  }
+  .add-person-row button:hover{border-color:var(--brass);}
+  .items-list{margin-top:4px;}
+  .item-card{
+    background:var(--ink-3);
+    border:1px solid var(--line);
+    border-radius:10px;
+    padding:12px;
+    margin-bottom:10px;
+  }
+  .item-row-top{
+    display:flex;
+    gap:8px;
+    align-items:center;
+    margin-bottom:10px;
+  }
+  .item-row-top input[type=text]{flex:1.6;}
+  .item-row-top input[type=number]{flex:1;}
+  .assign-label{
+    font-size:11px;
+    color:var(--cream-dim);
+    margin-bottom:7px;
+    text-transform:uppercase;
+    letter-spacing:.05em;
+  }
+  .assign-chips{
+    display:flex;
+    flex-wrap:wrap;
+    gap:6px;
+  }
+  .assign-chip{
+    padding:5px 11px;
+    border-radius:999px;
+    border:1px solid var(--line);
+    background:transparent;
+    color:var(--cream-dim);
+    font-family:'Cairo',sans-serif;
+    font-size:12.5px;
+    font-weight:600;
+    cursor:pointer;
+    transition:all .12s ease;
+  }
+  .assign-chip.on{
+    background:var(--brass);
+    border-color:var(--brass);
+    color:var(--ink);
+  }
+  .no-people{
+    font-size:12.5px;
+    color:var(--cream-dim);
+    padding:6px 0;
+  }
+  .rm{
+    background:transparent;
+    border:1px solid var(--line);
+    color:var(--rust);
+    width:34px;height:34px;
+    border-radius:8px;
+    cursor:pointer;
+    font-size:16px;
+    line-height:1;
+    flex-shrink:0;
+  }
+  .rm:hover{border-color:var(--rust);}
+  .add-row{
+    margin-top:6px;
+    width:100%;
+    padding:10px;
+    border-radius:8px;
+    border:1px dashed var(--brass-dim);
+    background:transparent;
+    color:var(--brass);
+    font-family:'Cairo',sans-serif;
+    font-weight:600;
+    font-size:13px;
+    cursor:pointer;
+  }
+  .add-row:hover{border-color:var(--brass);}
+  .stepper{
+    display:flex;
+    align-items:center;
+    gap:10px;
+  }
+  .stepper button{
+    width:38px;height:38px;
+    border-radius:8px;
+    border:1px solid var(--line);
+    background:var(--ink-3);
+    color:var(--cream);
+    font-size:18px;
+    cursor:pointer;
+  }
+  .stepper span{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:18px;
+    min-width:28px;
+    text-align:center;
+  }
+
+  /* Receipt */
+  .receipt-shell{position:relative;margin-top:22px;}
+  .receipt{
+    background:var(--cream);
+    color:var(--ink);
+    font-family:'IBM Plex Mono',monospace;
+    padding:26px 22px 34px;
+    border-radius:2px 2px 0 0;
+  }
+  .receipt h2{
+    font-family:'Cairo',sans-serif;
+    font-weight:800;
+    font-size:18px;
+    text-align:center;
+    margin:0 0 4px;
+    letter-spacing:.02em;
+  }
+  .receipt .tagline{
+    text-align:center;
+    font-size:11px;
+    color:#6B6350;
+    margin-bottom:16px;
+  }
+  .dashed{
+    border-top:1.5px dashed #B9AF98;
+    margin:12px 0;
+  }
+  .lineitem{
+    display:flex;
+    justify-content:space-between;
+    font-size:13.5px;
+    margin:5px 0;
+  }
+  .lineitem.total{
+    font-size:16px;
+    font-weight:600;
+    margin-top:10px;
+  }
+  .lineitem .muted{color:#7A7260;font-size:12px;}
+  .people-out .lineitem{font-size:14px;}
+  .person-block{margin-bottom:14px;}
+  .person-block:last-child{margin-bottom:0;}
+  .person-name{
+    font-family:'Cairo',sans-serif;
+    font-weight:800;
+    font-size:14px;
+    margin-bottom:5px;
+    display:flex;
+    justify-content:space-between;
+    align-items:baseline;
+  }
+  .person-name .p-total{
+    font-family:'IBM Plex Mono',monospace;
+    font-weight:600;
+    font-size:14px;
+  }
+  .person-items{margin:0 0 6px;}
+  .person-items .lineitem{
+    font-size:12.5px;
+    color:#5B5442;
+    margin:3px 0;
+  }
+  .person-items .lineitem .it-note{
+    font-size:10.5px;
+    color:#8A8168;
+  }
+  .person-sub{
+    font-size:12px;
+    color:#7A7260;
+    display:flex;
+    justify-content:space-between;
+    margin-top:4px;
+    padding-top:4px;
+    border-top:1px dotted #C7BEA6;
+  }
+  .person-divider{
+    border-top:1px dashed #C7BEA6;
+    margin:12px 0;
+  }
+  .zigzag{
+    height:14px;
+    background:var(--cream);
+    clip-path: polygon(0% 0%, 100% 0%, 100% 100%, 96% 40%, 92% 100%, 88% 40%, 84% 100%, 80% 40%, 76% 100%, 72% 40%, 68% 100%, 64% 40%, 60% 100%, 56% 40%, 52% 100%, 48% 40%, 44% 100%, 40% 40%, 36% 100%, 32% 40%, 28% 100%, 24% 40%, 20% 100%, 16% 40%, 12% 100%, 8% 40%, 4% 100%, 0% 40%);
+  }
+  .copy-btn{
+    width:100%;
+    margin-top:16px;
+    padding:13px;
+    border-radius:10px;
+    border:none;
+    background:var(--brass);
+    color:var(--ink);
+    font-family:'Cairo',sans-serif;
+    font-weight:800;
+    font-size:14px;
+    cursor:pointer;
+    letter-spacing:.02em;
+  }
+  .copy-btn:hover{background:#DBB63A;}
+  .copy-btn.copied{background:var(--turquoise);color:var(--cream);}
+  .hint{
+    font-size:12px;
+    color:var(--cream-dim);
+    margin-top:8px;
+    line-height:1.5;
+  }
+  .warn{
+    font-size:12px;
+    color:var(--rust);
+    margin-top:8px;
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="eyebrow">EGYPT · SERVICE + TAX SPLITTER</div>
+  <h1>El-<span>Fatura</span></h1>
+  <p class="sub">One receipt, twelve friends. Add the service and tax once, then split it fairly — evenly, or by what each person actually ordered.</p>
+
+  <div class="card">
+    <div class="rates">
+      <div class="field">
+        <label>Service %</label>
+        <input type="number" id="servicePct" value="12" min="0" step="0.5">
+      </div>
+      <div class="field">
+        <label>Tax %</label>
+        <input type="number" id="taxPct" value="14" min="0" step="0.5">
+      </div>
+    </div>
+    <label class="toggle-row">
+      <input type="checkbox" id="compound" checked>
+      Tax applies on subtotal + service (standard on most Egyptian receipts)
+    </label>
+  </div>
+
+  <div class="modes">
+    <button class="mode-btn active" id="btnEqual">Split evenly</button>
+    <button class="mode-btn" id="btnItem">Split by item</button>
+  </div>
+
+  <!-- EQUAL MODE -->
+  <div class="card" id="equalPanel">
+    <div class="field" style="margin-bottom:14px;">
+      <label>Subtotal on the receipt (before service &amp; tax), EGP</label>
+      <input type="number" id="eqSubtotal" min="0" step="1" placeholder="e.g. 3200">
+    </div>
+    <label>Number of people</label>
+    <div class="stepper">
+      <button id="eqMinus">−</button>
+      <span id="eqCount">12</span>
+      <button id="eqPlus">+</button>
+    </div>
+  </div>
+
+  <!-- ITEM MODE -->
+  <div class="card" id="itemPanel" style="display:none;">
+    <label>People</label>
+    <div class="chip-list" id="peopleChips"></div>
+    <div class="add-person-row">
+      <input type="text" id="newPersonInput" placeholder="Add a name and press Enter">
+      <button id="addPersonBtn">Add</button>
+    </div>
+
+    <label style="margin-top:18px;">Items from the receipt</label>
+    <div class="items-list" id="itemsList"></div>
+    <button class="add-row" id="addItem">+ Add item</button>
+  </div>
+
+  <div class="receipt-shell">
+    <div class="receipt" id="receipt"></div>
+    <div class="zigzag"></div>
+  </div>
+
+  <button class="copy-btn" id="copyBtn">Copy summary to send</button>
+  <div class="hint">Tip: paste the copied summary straight into your group chat so everyone knows exactly what they owe.</div>
+
+</div>
+
+<script>
+const eqSubtotal = document.getElementById('eqSubtotal');
+const servicePctEl = document.getElementById('servicePct');
+const taxPctEl = document.getElementById('taxPct');
+const compoundEl = document.getElementById('compound');
+const receiptEl = document.getElementById('receipt');
+const copyBtn = document.getElementById('copyBtn');
+
+let mode = 'equal';
+let eqCount = 12;
+let nextPersonId = 1;
+let nextItemId = 1;
+let people = [];         // {id, name}
+let items = [];          // {id, name, price, assigned:Set(personId)}
+
+const btnEqual = document.getElementById('btnEqual');
+const btnItem = document.getElementById('btnItem');
+const equalPanel = document.getElementById('equalPanel');
+const itemPanel = document.getElementById('itemPanel');
+
+btnEqual.onclick = () => { mode='equal'; btnEqual.classList.add('active'); btnItem.classList.remove('active'); equalPanel.style.display='block'; itemPanel.style.display='none'; render(); };
+btnItem.onclick = () => { mode='item'; btnItem.classList.add('active'); btnEqual.classList.remove('active'); itemPanel.style.display='block'; equalPanel.style.display='none'; render(); };
+
+document.getElementById('eqMinus').onclick = () => { eqCount = Math.max(1, eqCount-1); document.getElementById('eqCount').textContent = eqCount; render(); };
+document.getElementById('eqPlus').onclick = () => { eqCount = Math.min(50, eqCount+1); document.getElementById('eqCount').textContent = eqCount; render(); };
+
+// ---- People ----
+function addPerson(name){
+  const id = nextPersonId++;
+  people.push({id, name: name || `Person ${people.length+1}`});
+  // new items created from now on default to including this person automatically
+  renderPeopleChips();
+  renderItemsList();
+  render();
+}
+function removePerson(id){
+  people = people.filter(p => p.id !== id);
+  items.forEach(it => it.assigned.delete(id));
+  renderPeopleChips();
+  renderItemsList();
+  render();
+}
+function renderPeopleChips(){
+  const wrap = document.getElementById('peopleChips');
+  wrap.innerHTML = '';
+  people.forEach(p => {
+    const chip = document.createElement('div');
+    chip.className = 'person-chip';
+    chip.innerHTML = `<span>${p.name}</span><button data-id="${p.id}">×</button>`;
+    wrap.appendChild(chip);
+  });
+  wrap.querySelectorAll('button').forEach(btn => {
+    btn.onclick = () => removePerson(+btn.dataset.id);
+  });
+}
+const newPersonInput = document.getElementById('newPersonInput');
+document.getElementById('addPersonBtn').onclick = () => {
+  const val = newPersonInput.value.trim();
+  addPerson(val);
+  newPersonInput.value = '';
+  newPersonInput.focus();
+};
+newPersonInput.addEventListener('keydown', e => {
+  if(e.key === 'Enter'){
+    e.preventDefault();
+    const val = newPersonInput.value.trim();
+    addPerson(val);
+    newPersonInput.value = '';
+  }
+});
+
+// ---- Items ----
+function addItem(){
+  const id = nextItemId++;
+  items.push({id, name:'', price:'', assigned: new Set(people.map(p=>p.id))});
+  renderItemsList();
+  render();
+}
+function removeItem(id){
+  items = items.filter(it => it.id !== id);
+  renderItemsList();
+  render();
+}
+function renderItemsList(){
+  const wrap = document.getElementById('itemsList');
+  wrap.innerHTML = '';
+  items.forEach(item => {
+    const card = document.createElement('div');
+    card.className = 'item-card';
+    const chipsHtml = people.length
+      ? people.map(p => `<button type="button" class="assign-chip ${item.assigned.has(p.id) ? 'on':''}" data-item="${item.id}" data-person="${p.id}">${p.name}</button>`).join('')
+      : `<div class="no-people">Add people above first</div>`;
+    card.innerHTML = `
+      <div class="item-row-top">
+        <input type="text" value="${item.name}" data-item="${item.id}" data-field="name" placeholder="Item name">
+        <input type="number" value="${item.price}" data-item="${item.id}" data-field="price" placeholder="EGP" min="0" step="1">
+        <button class="rm" data-item="${item.id}">×</button>
+      </div>
+      <div class="assign-label">Shared by</div>
+      <div class="assign-chips">${chipsHtml}</div>
+    `;
+    wrap.appendChild(card);
+  });
+  wrap.querySelectorAll('input').forEach(inp => {
+    inp.addEventListener('input', e => {
+      const id = +e.target.dataset.item;
+      const field = e.target.dataset.field;
+      const item = items.find(it => it.id === id);
+      item[field] = e.target.value;
+      render();
+    });
+  });
+  wrap.querySelectorAll('.rm').forEach(btn => {
+    btn.addEventListener('click', () => removeItem(+btn.dataset.item));
+  });
+  wrap.querySelectorAll('.assign-chip').forEach(chip => {
+    chip.addEventListener('click', () => {
+      const itemId = +chip.dataset.item;
+      const personId = +chip.dataset.person;
+      const item = items.find(it => it.id === itemId);
+      if(item.assigned.has(personId)) item.assigned.delete(personId);
+      else item.assigned.add(personId);
+      renderItemsList();
+      render();
+    });
+  });
+}
+document.getElementById('addItem').onclick = addItem;
+
+[eqSubtotal, servicePctEl, taxPctEl, compoundEl].forEach(el => el.addEventListener('input', render));
+
+function fmt(n){
+  return n.toLocaleString('en-US', {minimumFractionDigits:2, maximumFractionDigits:2});
+}
+
+// largest remainder method: distribute piastres so sums match exactly
+function allocate(shares, totalPiastres){
+  const raw = shares.map(s => s * 100);
+  const floors = raw.map(Math.floor);
+  let used = floors.reduce((a,b)=>a+b,0);
+  let remainder = totalPiastres - used;
+  const order = raw.map((r,i)=>({i, frac:r-floors[i]})).sort((a,b)=>b.frac-a.frac);
+  const result = [...floors];
+  for(let k=0; k<remainder; k++){
+    result[order[k % order.length].i] += 1;
+  }
+  return result.map(v => v/100);
+}
+
+function render(){
+  const servicePct = parseFloat(servicePctEl.value) || 0;
+  const taxPct = parseFloat(taxPctEl.value) || 0;
+  const compound = compoundEl.checked;
+
+  let subtotal = 0, perPersonRows = [], note = '';
+
+  if(mode === 'equal'){
+    subtotal = parseFloat(eqSubtotal.value) || 0;
+  } else {
+    subtotal = items.reduce((sum,it) => sum + (parseFloat(it.price)||0), 0);
+  }
+
+  const service = subtotal * servicePct/100;
+  const taxBase = compound ? subtotal + service : subtotal;
+  const tax = taxBase * taxPct/100;
+  const grand = subtotal + service + tax;
+
+  if(mode === 'equal'){
+    const shares = new Array(eqCount).fill(grand/eqCount);
+    const alloc = allocate(shares, Math.round(grand*100));
+    perPersonRows = alloc.map((amt,i) => ({name:`Person ${i+1}`, amount:amt}));
+  } else {
+    if(subtotal > 0 && people.length > 0){
+      // each item's price splits evenly across the people it's tagged as shared by;
+      // an item nobody is assigned to falls back to splitting across everyone
+      const personShare = {};
+      const personItems = {};
+      people.forEach(p => { personShare[p.id] = 0; personItems[p.id] = []; });
+      let hasUnassigned = false;
+      items.forEach(it => {
+        const price = parseFloat(it.price) || 0;
+        if(price === 0) return;
+        let assignedIds = [...it.assigned].filter(id => personShare.hasOwnProperty(id));
+        if(assignedIds.length === 0){
+          assignedIds = people.map(p => p.id);
+          hasUnassigned = true;
+        }
+        const per = price / assignedIds.length;
+        assignedIds.forEach(id => {
+          personShare[id] += per;
+          personItems[id].push({
+            name: it.name || 'Unnamed item',
+            share: per,
+            splitCount: assignedIds.length
+          });
+        });
+      });
+      if(hasUnassigned) note = 'Items with no one selected were split evenly across everyone.';
+
+      const shares = people.map(p => (personShare[p.id] / subtotal) * grand);
+      const alloc = allocate(shares, Math.round(grand*100));
+      perPersonRows = people.map((p,i) => ({
+        name: p.name,
+        amount: alloc[i],
+        subtotal: personShare[p.id],
+        items: personItems[p.id]
+      }));
+    }
+  }
+
+  let html = `
+    <h2>EL-FATURA</h2>
+    <div class="tagline">— bill breakdown —</div>
+    <div class="lineitem"><span>Subtotal</span><span>EGP ${fmt(subtotal)}</span></div>
+    <div class="lineitem"><span>Service (${servicePct}%)</span><span>EGP ${fmt(service)}</span></div>
+    <div class="lineitem"><span>Tax (${taxPct}%)${compound ? ' <span class=\"muted\">on subtotal+svc</span>' : ''}</span><span>EGP ${fmt(tax)}</span></div>
+    <div class="dashed"></div>
+    <div class="lineitem total"><span>Total</span><span>EGP ${fmt(grand)}</span></div>
+    <div class="dashed"></div>
+    <div class="people-out">
+  `;
+
+  if(mode === 'item'){
+    perPersonRows.forEach((p, i) => {
+      html += `<div class="person-block">`;
+      html += `<div class="person-name"><span>${p.name}</span><span class="p-total">EGP ${fmt(p.amount)}</span></div>`;
+      html += `<div class="person-items">`;
+      if(p.items.length === 0){
+        html += `<div class="lineitem"><span>No items assigned</span><span></span></div>`;
+      } else {
+        p.items.forEach(it => {
+          const noteTxt = it.splitCount > 1 ? ` <span class="it-note">(shared ×${it.splitCount})</span>` : '';
+          html += `<div class="lineitem"><span>${it.name}${noteTxt}</span><span>EGP ${fmt(it.share)}</span></div>`;
+        });
+      }
+      html += `</div>`;
+      html += `<div class="person-sub"><span>Subtotal + svc/tax share</span><span>EGP ${fmt(p.amount)}</span></div>`;
+      html += `</div>`;
+      if(i < perPersonRows.length - 1) html += `<div class="person-divider"></div>`;
+    });
+  } else {
+    perPersonRows.forEach(p => {
+      html += `<div class="lineitem"><span>${p.name}</span><span>EGP ${fmt(p.amount)}</span></div>`;
+    });
+  }
+
+  html += `</div>`;
+
+  if(mode==='item' && (subtotal === 0 || people.length === 0)){
+    html += `<div class="lineitem muted" style="justify-content:center;margin-top:10px;">Add people and item prices above to see the split</div>`;
+  }
+  if(note){
+    html += `<div class="lineitem muted" style="justify-content:center;margin-top:6px;">${note}</div>`;
+  }
+
+  receiptEl.innerHTML = html;
+
+  copyBtn.dataset.summary = buildCopyText(subtotal, service, tax, grand, servicePct, taxPct, perPersonRows);
+}
+
+function buildCopyText(subtotal, service, tax, grand, servicePct, taxPct, rows){
+  let t = `EL-FATURA — Bill Split\n`;
+  t += `Subtotal: EGP ${fmt(subtotal)}\n`;
+  t += `Service (${servicePct}%): EGP ${fmt(service)}\n`;
+  t += `Tax (${taxPct}%): EGP ${fmt(tax)}\n`;
+  t += `Total: EGP ${fmt(grand)}\n`;
+  t += `------------------\n`;
+  rows.forEach(p => {
+    t += `${p.name}: EGP ${fmt(p.amount)}\n`;
+    if(p.items){
+      if(p.items.length === 0){
+        t += `   (no items assigned)\n`;
+      } else {
+        p.items.forEach(it => {
+          const noteTxt = it.splitCount > 1 ? ` (shared x${it.splitCount})` : '';
+          t += `   - ${it.name}${noteTxt}: EGP ${fmt(it.share)}\n`;
+        });
+      }
+    }
+  });
+  return t;
+}
+
+copyBtn.onclick = () => {
+  navigator.clipboard.writeText(copyBtn.dataset.summary || '').then(() => {
+    copyBtn.textContent = 'Copied ✓';
+    copyBtn.classList.add('copied');
+    setTimeout(() => { copyBtn.textContent = 'Copy summary to send'; copyBtn.classList.remove('copied'); }, 1600);
+  });
+};
+
+// seed with a couple of starter rows
+addPerson('Person 1');
+addPerson('Person 2');
+addItem();
+render();
+</script>
+</body>
+</html>
